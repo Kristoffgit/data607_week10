@@ -1,0 +1,126 @@
+---
+title: "Assignment 10B: Nobelprize.org"
+author: "Kristoff Oliphant"
+format: html
+editor: visual
+---
+
+## Introduction
+
+In week 10 we’re doing some more practice with JSON in assignment 10B. This assignment involves the Nobel Prize organizations public APIs. We’ll use them for accessing structured Nobel Prize data. The task is to use one or both of the APIs available at the Nobel Prize Developer Zone, using JSON data to investigate and answer four interesting, data-driven questions.
+
+## Planned Workflow
+
+I’ll navigate through nobel prizes API by using their instructions for API examples. Similar to week 9, I’ll make a request to the endpoint for the topic of interest, parse the JSON response, and then transform the results into a clean R data frame by using tidyr, jsonlite, and dplyr. After retrieving the required information, my four questions will be easier to create after analyzing what data is available.
+
+## Anticipated Challenges
+
+Challenges I anticipate facing are different from Week 9. A potential security breach is not the case this time since we can retrieve the API without an account by Nobel Prize, unlike The New York Times. I anticipate a challenge is parsing the JSON code and navigating it to extract information I want from Nobel prizes and laureates.
+
+**Source:** Developer zone. NobelPrize.org. Nobel Prize Outreach 2026. Sun. 5 Apr 2026. <https://www.nobelprize.org/about/developer-zone-2/>
+
+```{r}
+library(jsonlite)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r}
+prizes_url <- "https://api.nobelprize.org/2.1/nobelPrizes?limit=1000"
+prizes_raw <- fromJSON(prizes_url, flatten = TRUE)
+prizes_df <- prizes_raw$nobelPrizes
+```
+
+**Question 1:** Which Nobel Prize category has been awarded the fewest number of times in history?
+
+```{r}
+colnames(prizes_df)
+```
+
+```{r}
+category_analysis <- prizes_df %>%
+  group_by(category.en) %>%
+  summarise(total_prizes = n()) %>%
+  arrange(desc(total_prizes))
+category_analysis
+```
+
+**Answer:** We can see that the Nobel prize that's been awarded the least was the economic sciences. This could be because it's category came later in 1968, whereas the rest of the global prizes were from 1901.
+
+**Question 2:** How many women have won a Nobel Prize in the most recent 20 years (2006–2026) compared to the first 20 years of the prize (1901–1921)?
+
+```{r}
+laureates_url <- "https://api.nobelprize.org/2.1/laureates?limit=1000"
+laureates_raw <- fromJSON(laureates_url, flatten = TRUE)
+laureates_df <- laureates_raw$laureates
+```
+
+```{r}
+colnames(laureates_df)
+```
+
+```{r}
+laureates_tidy <- laureates_df %>%
+  unnest(nobelPrizes, names_sep = "_")
+colnames(laureates_tidy)
+```
+
+```{r}
+gender_analysis <- laureates_tidy %>%
+  filter(gender == "female") %>%
+  mutate(period = case_when(
+    nobelPrizes_awardYear >= 1901 & nobelPrizes_awardYear <= 1921 ~ "Early (1901-1921)",
+    nobelPrizes_awardYear >= 2006 & nobelPrizes_awardYear <= 2026 ~ "Recent (2006-2026)",
+    TRUE ~ "Other"
+  )) %>%
+  filter(period != "Other") %>%
+  count(period)
+```
+
+```{r}
+gender_analysis
+```
+
+**Answer:** In the most recent years women have won 34 Nobel prizes, while in the early years only 4 won. That's a 30 sum difference of women that have won.
+
+**Question 3:** Who are the top 5 youngest Nobel Prize winners in history, and what were the specific categories of their awards?
+
+```{r}
+youngest_analysis <- laureates_tidy %>%
+  mutate(
+    award_year = as.numeric(nobelPrizes_awardYear),
+    birth_year = as.numeric(birth.year)
+  ) %>%
+  mutate(age_at_award = award_year - birth_year) %>%
+  filter(!is.na(age_at_award)) %>%
+  arrange(age_at_award) %>%
+  select(fullName.en, age_at_award, nobelPrizes_category.en, nobelPrizes_awardYear) %>%
+  head(5)
+youngest_analysis
+```
+
+**Answer:** For this question we can see the top 5 youngest ranges from 17 to 31 years old. The specific categories of their wins are between physics and peace. The top 5 winners names are Malala Yousafzai, William Lawrence Bragg, Nadia Murad Basee Taha, Carl David Anderson, and Paul Adrian Maurice Dirac.
+
+**Question 4:** Which countries have the highest number of "International Laureates"? Which are individuals born in one country but affiliated with an institution in a different country at the time of their award?
+
+```{r}
+laureates_international <- laureates_tidy %>%
+unnest(nobelPrizes_affiliations, names_sep = "_")
+```
+
+```{r}
+international_results <- laureates_international %>%
+  filter(!is.na(birth.place.country.en), !is.na(nobelPrizes_affiliations_country.en)) %>%
+  filter(birth.place.country.en != nobelPrizes_affiliations_country.en) %>%
+  count(nobelPrizes_affiliations_country.en, sort = TRUE) %>%
+  rename(Host_Country = nobelPrizes_affiliations_country.en,
+         International_Laureate_Count = n) %>%
+  head(5)
+```
+
+```{r}
+international_results
+```
+
+**Answer:** This table shows that the USA has the highest number of recorded affiliations with International Laureate winners. So this can possibly signal that the USA is viewed as a place that attracts talent through it's resources and large amount of opportunities. This doesn't mean that other countries do not also attract talent at the global level, but it might not be as accessible.

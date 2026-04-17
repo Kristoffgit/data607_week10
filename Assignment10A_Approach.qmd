@@ -1,0 +1,18 @@
+---
+title: "Assignment 10A: Sentiment Analysis"
+author: "Kristoff Oliphant"
+format: html
+editor: visual
+---
+
+## Introduction
+
+Hello, it is now week 10 and we’re tasked with Sentiment analysis. We see sentiment analysis come up in chapter 2 of our book “Text Mining with R”. Our task for this assignment is to reproduce and extend the example provided in the chapter.
+
+## Planned Workflow
+
+I plan to obtain the primary example code from the chapter, cite it, and create a quarto document that can run the code. Then I’ll have to extend it, which I plan to do by choosing a different text corpus, which will be using gutenbergr, and I’ll choose one sentiment lexicon which will be syuzhet.
+
+## Anticipated Challenges
+
+A challenge I can foresee dealing with will be successfully extending the example with my two unique choices of gutenbergr and syuzhet. Successfully loading and using them as a text corpus and lexicon will be the main event for this assignment.

@@ -1,0 +1,18 @@
+---
+title: "Assignment 10B: Nobelprize.org"
+author: "Kristoff Oliphant"
+format: html
+editor: visual
+---
+
+## Introduction
+
+In week 10 we’re doing some more practice with JSON in assignment 10B. This assignment involves the Nobel Prize organizations public APIs. We’ll use them for accessing structured Nobel Prize data. The task is to use one or both of the APIs available at the Nobel Prize Developer Zone, using JSON data to investigate and answer four interesting, data-driven questions.
+
+## Planned Workflow
+
+I’ll navigate through nobel prizes API by using their instructions for API examples. Similar to week 9, I’ll make a request to the endpoint for the topic of interest, parse the JSON response, and then transform the results into a clean R data frame by using tidyr, jsonlite, and dplyr. After retrieving the required information, my four questions will be easier to create after analyzing what data is available.
+
+## Anticipated Challenges
+
+Challenges I anticipate facing are different from Week 9. A potential security breach is not the case this time since we can retrieve the API without an account by Nobel Prize, unlike The New York Times. I anticipate a challenge is parsing the JSON code and navigating it to extract information I want from Nobel prizes and laureates.
